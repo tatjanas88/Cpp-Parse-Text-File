@@ -3,6 +3,10 @@
 #include<string>
 #include<regex>
 #include<iostream>
+#include <fcntl.h>
+#include <cstdlib>
+#include <unistd.h>
+#include <sys/mman.h>
 /*boje u 16-bitnoj interpretaciji*/
 #define BLUE 0x001F
 #define GREEN 0x07E0
@@ -13,7 +17,7 @@
 #define VGA_Y 480
 
 #define MAX_MMAP_SIZE (VGA_X * VGA_Y * sizeof(unsigned int)) //zato sto nemaju svi procesori istu sirinu tipova(int moze biti 16,32,64)
-//svaki piksel je jedan INT   
+//svaki piksel je jedan INT
 void lineh_draw(int x1, int x2, int y, int color, int *buf)//funkcija za crtanje vertikalne l. (proslijedjuju se koord.,boja i pok.na memoriju koju ce prebojiti)
 {
     for(int x=x1; x<=x2; x++)
@@ -106,12 +110,19 @@ void regex_line(std::string line, int *buffer)//funkcija regex prima liniju po l
         std::cout<< "Matching not found!\n";
     }
 }
-int main()
+int main(int argc, char *argv[])
 {
     FILE* pok; //pokazivac na fajl,odnosno na putanju
     char *line_buff; //pokazivac na lokaciju gdje ce se smjestati sadrzaj fajla
     size_t line_buff_size = 0; //velicina promjenjine u koju ce se smjestati sadrzaj fajla = u pocetku 0;
-    pok = fopen ("text_file", "r"); //otvaranje text fajla
+
+    if (argc < 2) {
+      std::cout << "Please enter config file path\n";
+      return -1;
+    } else {
+      pok = fopen (argv[1], "r"); //otvaranje text fajla
+    }
+
     if (pok == NULL)
     {
         printf("Failed to open\n");
@@ -121,27 +132,26 @@ int main()
     int *buffer;
     int fd;
     fd = open("/dev/vga_dma", O_RDWR | O_NDELAY);
-    if (fd < 0) 
+    if (fd < 0)
     {
-      std::cout << "Cannot open " << dev_fn << "\n";
+      std::cout << "Cannot open " << "/dev/vga_dma" << "\n";
       exit(EXIT_FAILURE);
     }
     else
         /* memorijski mapiraj vga_dma na buffer*/
-    buffer = (int *)mmap(0, MAX_MMAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0); 
+    buffer = (int *)mmap(0, MAX_MMAP_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
         /*&line_buff je pokazivac na buffer gdje ce funk.smjestiti podatke procitane iz fajla=nealociran i prazan*/
         /*pokazivac na promenjivu koja sadrzi velicinu bafera=u mom slucaju to je nula, a poslije citanja ce sadrzati broj procitanih bajtova iz fajla*/
         /*pok je pokazivac na moj fajl*/
-    while(getline(&line_buff, &line_buff_size, pok)>=0) 
+    while(getline(&line_buff, &line_buff_size, pok)>=0)
         {
         regex_line(line_buff, buffer);
-        }    
+        }
     fclose(pok); //yatvaranje text fajla
     munmap(buffer, MAX_MMAP_SIZE);
     close(fd);
     if (fd < 0)
-      std::cout << "Cannot close " << dev_fn << "\n";
+      std::cout << "Cannot close " << "/dev/vga_dma" << "\n";
 
     delete [] buffer;
 }
-   
