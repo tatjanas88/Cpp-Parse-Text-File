@@ -153,5 +153,5 @@ int main(int argc, char *argv[])
     if (fd < 0)
       std::cout << "Cannot close " << "/dev/vga_dma" << "\n";
 
-    delete [] buffer;
+//    delete [] buffer;
 }
