@@ -110,7 +110,7 @@ void regex_line(std::string line, int *buffer)//funkcija regex prima liniju po l
         std::cout<< "Matching not found!\n";
     }
 }
-int main(int argc, char *argv[])
+int main(int argc, char *argv[]) //putannja do text file-a se daje prilikom pokretanja
 {
     FILE* pok; //pokazivac na fajl,odnosno na putanju
     char *line_buff; //pokazivac na lokaciju gdje ce se smjestati sadrzaj fajla
@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
         printf("Failed to open\n");
         exit(1);
     }
-    //ovaj dio je preuzet sa git-a//
+    //ovaj dio je preuzet sa git-a....rad sa VGA drajverom preko memorijskog mapiranja//
     int *buffer;
     int fd;
     fd = open("/dev/vga_dma", O_RDWR | O_NDELAY);
@@ -147,11 +147,11 @@ int main(int argc, char *argv[])
         {
         regex_line(line_buff, buffer);
         }
-    fclose(pok); //yatvaranje text fajla
+    fclose(pok); //zatvaranje text fajla
     munmap(buffer, MAX_MMAP_SIZE);
     close(fd);
     if (fd < 0)
       std::cout << "Cannot close " << "/dev/vga_dma" << "\n";
 
-    delete [] buffer;
+//    delete [] buffer;
 }
